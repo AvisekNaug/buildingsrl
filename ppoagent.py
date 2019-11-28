@@ -25,7 +25,7 @@ def train_agent(agent, rl_logs, env=None, steps=30000):
     agent.set_env(env)
     agent.learn(total_timesteps=steps, callback=SaveBest, tb_log_name="ppo2_event_folder")
 
-best_mean_reward = -np.inf
+best_reward = -np.inf
 n_steps = 0
 reward_path = './episode_reward/'
 
@@ -35,9 +35,14 @@ def SaveBest(_locals, _globals):
     performance is better than the previous best performance.
     """
 
-    global best_mean_reward, n_steps, reward_path
+    global best_reward, n_steps, reward_path
 
     self_ = _locals['self']
     episode_reward = self_.episode_reward
-
-
+    # Print stats every 1000 calls
+    if (n_steps + 1) % 2016 == 0:
+        if best_reward<=episode_reward:
+            best_reward = episode_reward
+            print("Saving new best model")
+            _locals['self'].save(reward_path + 'best_model.pkl')
+    n_steps += 1
