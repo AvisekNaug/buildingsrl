@@ -64,8 +64,8 @@ def test_agent(agent_weight_path: str, env, episodes = 1):
     """
 
     # load agent weights
-    agent = PPO2.load(agent_weight_path)
-    agent.set_env(env)
+    agent = PPO2.load(agent_weight_path, env)
+    # agent.set_env(env)
 
     perf_metrics = performancemetrics()
 
@@ -87,17 +87,17 @@ class performancemetrics():
     agent's performance:
     """
 
-    def __init__(self, metrics=[]):
-        self.metrics = metrics  # store perf metrics for each episode
+    def __init__(self):
+        self.metrics = []  # store perf metrics for each episode
         self.metric = {}
 
-    def on_episode_begin(self, logs={}):
-        self.metric = logs  # store performance metrics
+    def on_episode_begin(self):
+        self.metric = {}  # store performance metrics
 
     def on_episode_end(self):
         self.metrics.append(self.metric)
 
-    def on_step_end(self, info={}):
+    def on_step_end(self, info):
         for key, value in info.items():
             if key in self.metric:
                 self.metric[key].append(value)
