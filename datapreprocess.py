@@ -1,5 +1,6 @@
 from helperfunctions import *
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from scipy import stats
 
 # Helper methods for the LSTM data processing
 def subsequencing(df, period=1):
@@ -84,6 +85,10 @@ def datachunks(datapath, period=12, lag=-1, smoothing=False,
     # select part of the data
     # mask = (df.index>to_datetime('5/1/2018 23:55:00')) & (df.index<to_datetime('8/31/2019 23:55:00'))
     # df = df[mask]
+
+    # remove any further outliers
+    df = removeoutliers(df, df.columns)
+
     # subsample it to  timegaps
     df = df_sample(df, period)
 
@@ -91,6 +96,13 @@ def datachunks(datapath, period=12, lag=-1, smoothing=False,
         # window length of two hours = 120/(5*period)
         windowlength = int(120/(5*period))
         df = butterworthsmoothing(df, column_names=[outputcolumn], Wn = Wn)  # , windowlength=windowlength)
+
+    # after smoothing and sampling provide the upper bounds and lower bounds
+    localdataSet = df.iloc[:, :-2]
+    Stats = localdataSet.describe().iloc[[1, 2, 3, 7], :].to_numpy()
+    m, n = localdataSet.shape
+    spacelb = [Stats[2, i] for i in range(n)]
+    spaceub = [Stats[3, i] for i in range(n)]
 
     # scale the data min-max option !
     # !!!do not scale here as data also goes to RL environment
@@ -120,7 +132,7 @@ def datachunks(datapath, period=12, lag=-1, smoothing=False,
         outputDFrames[i][outputcolumn] = outputDFrames[i][outputcolumn].shift(lag)
         outputDFrames[i] = droprows(outputDFrames[i])
 
-    return outputDFrames
+    return outputDFrames, spacelb, spaceub
 
 
 def dflist2array(dfchunks, weekstart, slicepoint, weekend, time_steps=1, inputfeatures=5, outputfeatures=1, outputsequence=1,
@@ -150,3 +162,20 @@ def dflist2array(dfchunks, weekstart, slicepoint, weekend, time_steps=1, inputfe
                             outputsequence, outputfeatures, time_steps)  # (samplesize,1,1)
 
     return [train_X, train_y, test_X, test_y, train_df, test_df]
+
+def removeoutliers(dataframe, columnnames, z_thresh=3):
+    """
+    remove outliers beyond 3 standard deviations in the data
+    :param df:dataframe
+    :param columnnames: listes of column names to check for outliers
+    :param z_thresh: remove points beyond threshold*sima std deviations
+    :return: cleaned dateframe
+    """
+    for column_name in columnnames:
+        # Constrains will contain `True` or `False` depending on if it is a value below the threshold.
+        constraints = abs(stats.zscore(dataframe[column_name])) < z_thresh
+        # Drop (inplace) values set to be rejected
+        dataframe.drop(dataframe.index[~constraints], inplace=True)
+        dataframe = droprows(dataframe)
+
+    return dataframe

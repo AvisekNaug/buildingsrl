@@ -12,7 +12,9 @@ from gym.utils import seeding
 # This class describes the formal environment which the reinforcement learning
 # interacts with. It inherits some properties from the gym imported earlier
 class Env(gym.Env):
-    def __init__(self, train_df, test_df, modelpath: str = 'weights.best.hdf5'):
+    def __init__(self, train_df, test_df, spacelb, spaceub,
+                 modelpath: str = 'weights.best.hdf5',
+                 episodelength = int(10080 / 5)):
 
         '''Here we initialize the data driven model for evaluating energy
             The weights and biases of the models are stored in a file'''
@@ -38,16 +40,19 @@ class Env(gym.Env):
         self.windowMin = self.dataSet.rolling(self.win_len, min_periods=1).min()['OAT']
 
         '''Standard requirements for interfacing with Keras-RL's code'''
-        spacelb = [self.Stats[2, i] for i in range(self.n)]
-        spaceub = [self.Stats[3, i] for i in range(self.n)]
+        # spacelb = [self.Stats[2, i] for i in range(self.n)]
+        # spaceub = [self.Stats[3, i] for i in range(self.n)]
         self.observation_space = spaces.Box(low=np.array(spacelb),
                                             high=np.array(spaceub),
                                             dtype=np.float32)
         # self.action_space = spaces.Box(low=np.array([self.Stats[2,3]]), high=np.array([self.Stats[3,3]]),
         #          #                              dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([55.0]),
-                                       high=np.array([75.0]),
-                                       dtype=np.float32)
+        self.action_space = spaces.Box(low=np.array([-1]),
+                                       high=np.array([1]),
+                                       dtype=np.float32)  # since stable baselines does not allow scaling
+        self.actionspacehigh = 75
+        self.actionspacelow = 55
+
         self.seed()
         self.viewer = None
         self.state = None
@@ -60,7 +65,7 @@ class Env(gym.Env):
         #           reset to 0 when entire trainData is used up
 
         self.counter = 0
-        self.episodelength = int(10080 / 5)
+        self.episodelength = episodelength
         self.testing = False
         self.dataPtr = 0
 
@@ -81,6 +86,9 @@ class Env(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    def controlmap(self, action):
+        return 0.5*(action[0]+1)*(self.actionspacehigh-self.actionspacelow)+self.actionspacelow
+
     def step(self, controlact):
         """
         A normalized energy cost modelled for the building based on its current
@@ -90,7 +98,7 @@ class Env(gym.Env):
         self.state = self.S.flatten()
         oldenergy = self.costfn(self.state)
         # update the state
-        controlact = controlact[0]
+        controlact = self.controlmap(controlact)
         self.state[3] = controlact
         rlenergy = self.costfn(self.state)
 
