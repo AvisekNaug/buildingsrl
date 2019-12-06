@@ -35,7 +35,7 @@ train_X, train_y, test_X, test_y, train_df, test_df = \
 
 env = Env(train_df, test_df, spacelb, spaceub, modelpath='weights.best.hdf5',
           episodelength=episode_length)   # instantiating the environment
-env = wrap_env(env, logdir)  # wrapping environment for logging information
+env = wrap_env(env, logdir+'week'+str(weekend)+'.csv')  # wrapping environment for logging information
 
 
 agent = get_agent(env)  # Instantiating the agent for learning the control policy
@@ -86,7 +86,7 @@ while weekend<int(0.57*len(dfchunks)):
 
     # create the HVAC environment with new data
     env = Env(train_df, test_df, spacelb, spaceub, modelpath='weights.best.hdf5')  # instantiating the environment
-    env = wrap_env(env, logdir)  # wrapping environment for logging information
+    env = wrap_env(env, logdir+'week'+str(weekend)+'.csv')  # wrapping environment for logging information
 
     # do training
     trained_model = train_agent(agent, env, steps=num_steps)
