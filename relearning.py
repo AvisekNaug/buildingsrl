@@ -68,7 +68,7 @@ rl_perf_save(test_perf_log, logdir + 'Week' + str(weekend) + 'fixed_')  # Store 
 # Now we run a loop where we retrain the agent and compare it with fixed agent performance
 weekstart = 8  # for 1 month retraining periods
 common = True
-while weekend<int(0.6*len(dfchunks)):
+while weekend<int(0.57*len(dfchunks)):
 
     # advance 1 week
     weekstart += 1
