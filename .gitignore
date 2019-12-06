@@ -25,3 +25,4 @@ fixedrl/
 updatedrl/
 commonrl/
 rl_results/
+plotutils.py
