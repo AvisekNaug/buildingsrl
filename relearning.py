@@ -21,7 +21,7 @@ except FileExistsError:
         os.remove(logdir + f)
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%     Creating Weekly Chunks of Data       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-traindata = 'RL_relearn_dataV2.pkl'
+traindata = 'RL_relearn_data_v2.pkl'
 # chunk data frame into weeks
 dfchunks, spacelb, spaceub = datachunks(traindata, period=1, lag=-1, outputcolumn= 'TotalE',
                                         subsequence=True, smoothing=True, days=7, Wn =0.02)
