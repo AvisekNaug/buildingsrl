@@ -4,7 +4,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4 #no of cpu cores per task
+#SBATCH --cpus-per-task=2 #no of cpu cores per task
 #SBATCH --mem=64G #ram per node
 #SBATCH --mem-per-cpu=64G #ram per cpu core #--partition=debug
 #SBTACH --output=job_output1.out
