@@ -87,7 +87,7 @@ def datachunks(datapath, period=12, lag=-1, smoothing=False,
     # df = df[mask]
 
     # remove any further outliers
-    df = removeoutliers(df, df.columns)
+    df = removeoutliers(df, ['OAT', 'OAH'])
 
     # subsample it to  timegaps
     df = df_sample(df, period)
