@@ -1,0 +1,9 @@
+scipy==1.2.1
+tensorflow==1.13.1
+Keras==2.2.4
+matplotlib==3.1.0
+pandas==0.24.2
+stable_baselines==2.8.0
+numpy==1.16.4
+gym==0.14.0
+scikit_learn==0.22
